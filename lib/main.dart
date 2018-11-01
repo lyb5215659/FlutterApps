@@ -1,30 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:async';
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 void main() => runApp(MyApp());
-
-//异步获取数据
-// Future<Post> fetchPost() async {
-//   final response =
-//       await http.get('https://jsonplaceholder.typicode.com/posts/1');
-//   final responsejson = json.decode(response.body);
-
-//   return new Post.fromJson(responsejson);
-// }
-
-Future<List<Post>> fetchPost() async {
-  final response = await http.get('https://jsonplaceholder.typicode.com/posts');
-  final responsejson = json.decode(response.body);
-
-  List<Post> posts = new List<Post>();
-  for (var item in responsejson) {
-    posts.add(new Post.fromJson(item));
-  }
-  // return new Post.fromJson(responsejson);
-  return posts;
-}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -49,77 +26,176 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final GlobalKey<AnimatedListState> _listKey =
+      new GlobalKey<AnimatedListState>();
+  ListModel<int> _list;
+  int _selectedItem;
+  int _nextItem;
+
+  @override
+  void initState() {
+    super.initState();
+    _list = new ListModel<int>(
+      listKey: _listKey,
+      initalItems: <int>[0, 1, 2],
+      removedItemBuilder: _buildRemovedItem,
+    );
+    _nextItem = 3;
+  }
+
+  // Used to build list items that haven't been removed.
+  Widget _buildItem(
+      BuildContext context, int index, Animation<double> animation) {
+    return new CardItem(
+      animation: animation,
+      item: _list[index],
+      selected: _selectedItem == _list[index],
+      onTap: () {
+        setState(() {
+          _selectedItem = _selectedItem == _list[index] ? null : _list[index];
+        });
+      },
+    );
+  }
+
+  // Used to build an item after it has been removed from the list. This method is
+  // needed because a removed item remains  visible until its animation has
+  // completed (even though it's gone as far this ListModel is concerned).
+  // The widget will be used by the [AnimatedListState.removeItem] method's
+  // [AnimatedListRemovedItemBuilder] parameter.
+  Widget _buildRemovedItem(
+      int item, BuildContext context, Animation<double> animation) {
+    return new CardItem(
+      animation: animation,
+      item: item,
+      selected: false,
+      // No gesture detector here: we don't want removed items to be interactive.
+    );
+  }
+
+  // Insert the "next item" into the list model.
+  void _insert() {
+    final int index =
+        _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
+    _list.insert(index, _nextItem++);
+  }
+
+  // Remove the selected item from the list model.
+  void _remove() {
+    if (_selectedItem != null) {
+      _list.removeAt(_list.indexOf(_selectedItem));
+      setState(() {
+        _selectedItem = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-          child: new FutureBuilder<List<Post>>(
-        future: fetchPost(),
-        builder: (context, snapshot) {
-          //把数据放在widget上
-          var widgets = <Widget>[];
-          widgets.add(
-           new Container(
-             child: new Center(
-             heightFactor: 2,
-              child:new ListTile(
-               leading: new Icon(Icons.wb_incandescent),
-              title: new Text("data from JsonPlaceHolder",style:new TextStyle(fontSize:22, fontWeight: FontWeight.bold,color: Colors.white), textAlign: TextAlign.center),
-              subtitle: new  Text("https://jsonplaceholder.typicode.com/posts", textAlign: TextAlign.center,),
-            //  subtitle: new Text(post.body),
-            //  trailing: new Icon(Icons.book),
-            )
+        appBar: AppBar(
+          title: Text("widget.title"),
+          actions: <Widget>[
+            new IconButton(
+              icon: new Icon(Icons.add_circle),
+              onPressed: _insert,
+              tooltip: "insert a new item",
             ),
-             color: Colors.blueGrey[300],
-           )
-          );
-          for (var post in snapshot.data) {
-            widgets.add(
-              
-              new ListTile(
-               leading: new Icon(Icons.bookmark, color: post.id%3==0?Colors.red:Colors.grey,),
-              title: new Text(post.id.toString()+":"+post.title),
-             subtitle: new Text(post.body),
-            //  trailing: new Icon(Icons.book),
-            )
-            
-            );
-            widgets.add(new Divider());
-          }
-          //根据内容返回显示内容
-          if (snapshot.hasData) {
-            return new ListView(
-             children: widgets,
-            );
-          } else if (snapshot.hasError) {
-            return new Text(snapshot.error);
-          }
-          //当没数据和没出错时 显示 loading状态
-          return CircularProgressIndicator();
-        },
-      )),
-    );
+            new IconButton(
+              icon: new Icon(Icons.remove_circle),
+              onPressed: _remove,
+              tooltip: 'remove the selected item',
+            ),
+          ],
+        ),
+        body: new Padding(
+          padding: EdgeInsets.all(16),
+          child: new AnimatedList(
+            key: _listKey,
+            initialItemCount: _list.length,
+            itemBuilder: _buildItem,
+          ),
+        ));
   }
 }
 
-//定义 Post类
-class Post {
-  final int userId;
-  final int id;
-  final String title;
-  final String body;
+class ListModel<E> {
+  ListModel({
+    @required this.listKey,
+    @required this.removedItemBuilder,
+    Iterable<E> initalItems,
+  })  : assert(listKey != null),
+        assert(removedItemBuilder != null),
+        _items = new List<E>.from(initalItems ?? <E>[]);
 
-  Post({this.userId, this.id, this.title, this.body});
+  final GlobalKey<AnimatedListState> listKey;
+  final dynamic removedItemBuilder;
+  final List<E> _items;
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return new Post(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
-      body: json['body'],
+  AnimatedListState get _animatedList => listKey.currentState;
+
+  void insert(int index, E item) {
+    _items.insert(index, item);
+    _animatedList.insertItem(index);
+  }
+
+  E removeAt(int index) {
+    final E removedItem = _items.removeAt(index);
+    if (removedItem != null) {
+      _animatedList.removeItem(index,
+          (BuildContext context, Animation<double> animation) {
+        return removedItemBuilder(removedItem, context, animation);
+      });
+    }
+    return removedItem;
+  }
+
+  int get length => _items.length;
+  E operator [](int index) => _items[index];
+  int indexOf(E item) => _items.indexOf(item);
+}
+
+class CardItem extends StatelessWidget {
+  const CardItem(
+      {Key key,
+      @required this.animation,
+      this.onTap,
+      @required this.item,
+      this.selected: false})
+      : assert(animation != null),
+        assert(item != null && item >= 0),
+        assert(selected != null),
+        super(key: key);
+
+  final Animation<double> animation;
+  final VoidCallback onTap;
+  final int item;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    TextStyle textStyle = Theme.of(context).textTheme.display1;
+    if (selected)
+      textStyle = textStyle.copyWith(color: Colors.lightGreenAccent[400]);
+    return new Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: new SizeTransition(
+        axis: Axis.vertical,
+        sizeFactor: animation,
+        child: new GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: new SizedBox(
+            height: 128.0,
+            child: new Card(
+              color: Colors.primaries[item % Colors.primaries.length],
+              child: new Center(
+                child: new Text('Item $item', style: textStyle),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
