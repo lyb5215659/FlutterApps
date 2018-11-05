@@ -60,7 +60,6 @@ Widget appDrawer(BuildContext context) {
       title: new Text("关于Flutter Store"),
       trailing: new Icon(Icons.chevron_right),
     ),
-    //  new Divider(),
   ]));
 }
 
