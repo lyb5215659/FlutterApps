@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fapphttp/Darts/PersonalCenterPage.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 
 //import Pages
 import 'package:fapphttp/Darts/DiscoverPage.dart';
