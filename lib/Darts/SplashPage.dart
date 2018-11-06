@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fapphttp/Dars/MyHomePage.dart';
+import 'package:fapphttp/Darts/MyHomePage.dart';
 
 class SplashPage extends StatefulWidget {
   SplashPage({Key key}) : super(key: key);

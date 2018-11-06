@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fapphttp/Dars/SplashPage.dart';
+import 'package:fapphttp/Darts/SplashPage.dart';
 
 void main() => runApp(MyApp());
 
