@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fapphttp/Darts/PersonalCenterPage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 //import Pages
 import 'package:fapphttp/Darts/DiscoverPage.dart';
@@ -83,9 +85,9 @@ var tabbodys = [
 var tabIndex = 0;
 
 Text getTitle(int curIndex) {
-  print("getTitle");
-  print(curIndex);
-  print(tabIndex);
+  // print("getTitle");
+  // print(curIndex);
+  // print(tabIndex);
   if (curIndex == tabIndex) {
     return new Text(
       appBottomNavTitles[tabIndex],
@@ -111,3 +113,20 @@ Icon getIcon(int curIndex) {
     );
   }
 }
+
+// PopupMenuButton
+class Choice{
+  const Choice({this.title,this.icon});
+  final String title;
+  final IconData icon;
+}
+
+const List<Choice> choices = <Choice>[
+  Choice(title: 'Car', icon: Icons.directions_car),
+  Choice(title: 'Bicycle', icon: Icons.directions_bike),
+  Choice(title: 'Boat', icon: Icons.directions_boat),
+  Choice(title: 'Bus', icon: Icons.directions_bus),
+  Choice(title: 'Train', icon: Icons.directions_railway),
+  Choice(title: 'Walk', icon: Icons.directions_walk),
+];
+ Choice selectedChoice = choices[0]; 

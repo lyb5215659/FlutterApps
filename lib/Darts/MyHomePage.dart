@@ -12,6 +12,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  void _select(appConfigs.Choice choice) {
+    setState(() {
+      // Causes the app to rebuild with the new _selectedChoice.
+      print("selected:"+choice.title);
+      appConfigs.selectedChoice = choice;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,10 +32,24 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: <Widget>[
             new IconButton(
               icon: new Icon(
-                Icons.insert_emoticon,
+                appConfigs.selectedChoice.icon,
               ),
               onPressed: () {},
               tooltip: "Hello",
+            ),
+            PopupMenuButton<appConfigs.Choice>(
+              onSelected: _select,
+              itemBuilder: (BuildContext context) {
+                return appConfigs.choices
+                    .skip(2)
+                    .map<PopupMenuItem<appConfigs.Choice>>(
+                        (appConfigs.Choice choice) {
+                  return PopupMenuItem<appConfigs.Choice>(
+                    value: choice,
+                    child: Text(choice.title),
+                  );
+                }).toList();
+              },
             ),
           ],
 //  flexibleSpace: new Text("选购",style: new TextStyle( fontSize: 22),),
