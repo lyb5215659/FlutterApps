@@ -128,3 +128,16 @@ const List<Choice> choices = <Choice>[
   Choice(title: 'Walk', icon: Icons.directions_walk),
 ];
  Choice selectedChoice = choices[0]; 
+
+
+ //BuyPage data
+ var products = [
+  // {"title": "RMBook Air", "subTitle": "轻轻地，再次倾心。","onPressed":""},
+  // new Product("RMBook Air", "轻轻地，再次倾心。" ,((BuildContext context)=>{Navigator.push(context, new MaterialPageRoute())}), 'imgPath'),
+  new Product("RMBook Air", "轻轻地，再次倾心。", () => {}, 'images/logon_one_min.png'),
+  new Product("新一代Phone", "新生所向。", () => {}, 'images/3pice_min.png'),
+  new Product("IBook Air", "安心静心读。", () => {}, 'images/logon_one_min.png'),
+  new Product("Max Phone", "满足你的大。", () => {}, 'images/3pice_min.png'),
+  new Product("精致IAir", "近乎完美品质。", () => {}, 'images/logon_one_min.png'),
+  new Product("The Future", "一起改变未来。", () => {}, 'images/3pice_min.png'),
+];
